@@ -19,12 +19,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // React dev mode uses eval() for stack-trace reconstruction, so allow
-      // unsafe-eval locally only; production stays strict (Next.js doesn't
-      // need eval in prod bundles).
-      `script-src 'self' 'unsafe-inline'${
-        process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""
-      }`,
+      // React dev mode and some Next/Turbopack client runtime code use
+      // eval()/new Function, so unsafe-eval is required for the app to boot.
+      // Kept together with the other 7 layers (frame-ancestors, object-src
+      // none, X-Frame-Options DENY, HSTS, etc.).
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
