@@ -58,7 +58,7 @@ export default async function DashboardHome() {
             session: {profile?.role ?? "mentee"} · inactive after 30min
           </p>
           <h1 className="mt-1 text-2xl font-bold md:text-3xl">
-            Welcome back, <span className="text-cyber">{profile?.full_name ?? "operator"}</span>
+            Welcome back, <span className="text-cyber">{profile?.full_name?.trim().split(/\s+/)[0] || "operator"}</span>
           </h1>
           <p className="mt-1 text-sm text-muted">
             {weekLabel(week)} · training target: defend the perimeter
