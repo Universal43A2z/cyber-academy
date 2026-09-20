@@ -1,29 +1,7 @@
--- =====================================================================
--- F1 STACKMIND Cyber Academy — seed data
--- Run AFTER schema.sql. Idempotent: safe to re-run.
--- =====================================================================
+-- Updates module lesson content to the expanded versions.
+-- Run in the Supabase SQL editor. Idempotent: overwrites content by week_no.
 
--- ---------------------------------------------------------------------
--- Weekly curriculum modules (8 weeks)
--- ---------------------------------------------------------------------
-
--- Ensure one module per week so re-running this seed refreshes content
--- instead of duplicating rows.
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint where conname = 'modules_week_no_unique'
-  ) then
-    alter table public.modules add constraint modules_week_no_unique unique (week_no);
-  end if;
-end;
-$$;
-
-insert into public.modules (week_no, title, description, content, video_url, published) values
-(1,
- 'Introduction to Cybersecurity & Career Paths',
- 'What cybersecurity is, who defends it, and the careers you can build.',
- $$# Week 1 — Introduction to Cybersecurity
+update public.modules set content = $m1$# Week 1 — Introduction to Cybersecurity
 
 ## What cybersecurity really is
 
@@ -79,13 +57,10 @@ A single incident can break all three at once.
 
 - Write one real-world failure example for each of Confidentiality, Integrity, and Availability
 - Find a recent breach headline and identify which part of the triad failed first
-- Sketch the threat model you would build if you ran an online shop$$,
-null, true),
+- Sketch the threat model you would build if you ran an online shop$m1$
+where week_no = 1;
 
-(2,
- 'Networking Fundamentals for Defenders',
- 'IPs, ports, protocols, and how data travels.',
- $$# Week 2 — Networking Fundamentals
+update public.modules set content = $m2$# Week 2 — Networking Fundamentals
 
 ## How machines talk to each other
 
@@ -141,13 +116,10 @@ Each layer **wraps** the one above it: the browser hands data to TCP (adds a por
 
 - Use `ping` and `traceroute` and write down each hop to your school gateway
 - Use `nmap -sV` (only on systems you own or are authorized to test) to discover running services
-- Use Wireshark to capture the packets of a single HTTPS page load and identify the DNS, TCP handshake, and TLS layers$$,
-null, true),
+- Use Wireshark to capture the packets of a single HTTPS page load and identify the DNS, TCP handshake, and TLS layers$m2$
+where week_no = 2;
 
-(3,
- 'Linux & Operating System Essentials',
- 'The command line, users, permissions, and processes.',
- $$# Week 3 — Linux Essentials
+update public.modules set content = $m3$# Week 3 — Linux Essentials
 
 ## Why a defender must know Linux
 
@@ -206,13 +178,10 @@ A Linux box is a collection of processes:
 ## Activity
 
 - Create a user, create a file as that user, then change ownership and permission bits and watch each change with `ls -l`
-- Read `/var/log/auth.log` (or `secure`) and list the last five failed login attempts with their source IPs$$,
-null, true),
+- Read `/var/log/auth.log` (or `secure`) and list the last five failed login attempts with their source IPs$m3$
+where week_no = 3;
 
-(4,
- 'Cryptography Basics',
- 'Hashing, encryption, and why passwords are hashed.',
-$$# Week 4 — Cryptography Basics
+update public.modules set content = $m4$# Week 4 — Cryptography Basics
 
 ## Two families of encryption
 
@@ -255,13 +224,10 @@ Websites must never store plaintext passwords. Best practice:
 
 - In a terminal: `echo -n "cyber" | sha256sum`
 - Then: `echo -n "cyber" | md5sum`
-- Then: `echo -n "cyber!" | sha256sum` — see one added character change the entire hash, while the same input keeps producing the same hash$$,
-null, true),
+- Then: `echo -n "cyber!" | sha256sum` — see one added character change the entire hash, while the same input keeps producing the same hash$m4$
+where week_no = 4;
 
-(5,
- 'Web Security Essentials',
- 'How websites are attacked and defended (OWASP).',
- $$# Week 5 — Web Security
+update public.modules set content = $m5$# Week 5 — Web Security
 
 ## Where websites go wrong
 
@@ -309,13 +275,10 @@ Every visitor who views that comment silently sends their session cookie to the 
 ## Activity
 
 - Open your browser DevTools → Network, reload this page, and inspect its `Content-Security-Policy` header — this academy sends one on every request
-- Pick a site you use and write down three security controls you can observe, plus one you would add$$,
-null, true),
+- Pick a site you use and write down three security controls you can observe, plus one you would add$m5$
+where week_no = 5;
 
-(6,
- 'Network Security, Firewalls & Monitoring',
- 'Segmentation, filtering, and watching the wire.',
- $$# Week 6 — Network Security
+update public.modules set content = $m6$# Week 6 — Network Security
 
 ## Segmentation — walls between zones
 
@@ -353,13 +316,10 @@ Logs from `auth.log`, firewalls, DNS, web servers, and databases are your eviden
 
 - Explain why port 3389 (RDP) should never face the internet without a VPN
 - Sketch a web server in a DMZ, a database in an internal zone, and staff on the LAN — write the firewall rule between each pair of zones
-- Run `ss -tulpn` on a Linux box and identify which ports are listening and why$$,
-null, true),
+- Run `ss -tulpn` on a Linux box and identify which ports are listening and why$m6$
+where week_no = 6;
 
-(7,
- 'Incident Response & Digital Forensics',
- 'The 6-step response lifecycle and clean evidence handling.',
- $$# Week 7 — Incident Response
+update public.modules set content = $m7$# Week 7 — Incident Response
 
 ## What an incident is
 
@@ -406,13 +366,10 @@ Good forensics is a **timeline**: order every artifact by timestamp. The first s
 
 ## Tabletop drill
 
-Replay the phishing scenario above with classmates. Assign roles — SOC analyst, IR lead, sysadmin, communications. Decide: who authorizes disconnecting the machine? When do you inform affected users? Where is the chain of custody recorded?$$,
-null, true),
+Replay the phishing scenario above with classmates. Assign roles — SOC analyst, IR lead, sysadmin, communications. Decide: who authorizes disconnecting the machine? When do you inform affected users? Where is the chain of custody recorded?$m7$
+where week_no = 7;
 
-(8,
- 'Ethical Hacking, CTF & Your Roadmap',
- 'The legal frame, CTF platforms, and how to keep learning.',
- $$# Week 8 — Ethical Hacking & Your Roadmap
+update public.modules set content = $m8$# Week 8 — Ethical Hacking & Your Roadmap
 
 ## The line you must never cross
 
@@ -463,72 +420,5 @@ A flag looks like `FLAG{something_secret}` and is proof of a finding. The game e
 
 ## Graduation task
 
-Write a two-paragraph career plan: which role you want, the first three skills you will learn, and your 90-day goal. Then complete one TryHackMe room and write down the single technique you learned$$,
-null, true)
-on conflict (week_no) do update
-  set title = excluded.title,
-      description = excluded.description,
-      content = excluded.content,
-      published = excluded.published;
-
--- ---------------------------------------------------------------------
--- Quizzes (server-scored; the options JSONB pair with correct_index)
--- ---------------------------------------------------------------------
-
-insert into public.quizzes (week_no, title, description, time_limit_sec, published) values
-(2, 'Basics Bootcamp', 'Covers weeks 1—2: terminology, CIA triad, networking basics.', 600, true),
-(4, 'System Hardening', 'Covers weeks 3—4: Linux, permissions, hashing and encryption.', 600, true),
-(6, 'Web & Network Defense', 'Covers weeks 5—6: OWASP, firewalls, segmentation.', 600, true),
-(8, 'IR & Hacking Capstone', 'Covers weeks 7—8: incident response, forensics, ethics.', 600, true);
-
--- Week 2 quiz
-insert into public.quiz_questions (quiz_id, question, options, correct_index, points, position)
-select q.id, o.question, o.options, o.correct_index, o.points, o.position
-from public.quizzes q,
-jsonb_to_recordset('[
-  {"question":"Which of the following BEST describes the goal of *Confidentiality* in the CIA triad?","options":["Systems are always available","Only authorized people can view data","Data cannot be changed","Every login is audited"],"correct_index":1,"points":1,"position":0},
-  {"question":"Which protocol is used to translate domain names into IP addresses?","options":["SMTP","HTTP","DNS","SSH"],"correct_index":2,"points":1,"position":1},
-  {"question":"SSH typically operates on which default port?","options":["21","22","80","443"],"correct_index":1,"points":1,"position":2},
-  {"question":"A penetration tester, unlike a criminal, must always have what?","options":["A VPN","Written authorization","Admin credentials","A burner laptop"],"correct_index":1,"points":1,"position":3},
-  {"question":"Which layer of the OSI model is responsible for end-to-end delivery of segments?","options":["Application","Transport","Network","Physical"],"correct_index":1,"points":1,"position":4}
-]'::jsonb) as o(question text, options jsonb, correct_index int, points int, position int)
-where q.title = 'Basics Bootcamp';
-
--- Week 4 quiz
-insert into public.quiz_questions (quiz_id, question, options, correct_index, points, position)
-select q.id, o.question, o.options, o.correct_index, o.points, o.position
-from public.quizzes q,
-jsonb_to_recordset('[
-  {"question":"Which directory typically holds configuration files on Linux?","options":["/tmp","/home","/etc","/dev"],"correct_index":2,"points":1,"position":0},
-  {"question":"Password storage should use which technique?","options":["Encryption then store the key","Hashing plus a random salt","Plaintext for speed","Base64 encoding"],"correct_index":1,"points":1,"position":1},
-  {"question":"Hashing is best described as…","options":["Reversible encoding","One-way transformation","Compression","Obfuscation only"],"correct_index":1,"points":1,"position":2},
-  {"question":"chmod 755 gives the owner which rights?","options":["Read only","Read and write","Read, write, execute","Execute only"],"correct_index":2,"points":1,"position":3},
-  {"question":"Which encryption family uses both a public and a private key?","options":["Symmetric","Asymmetric","Hashing","Encoding"],"correct_index":1,"points":1,"position":4}
-]'::jsonb) as o(question text, options jsonb, correct_index int, points int, position int)
-where q.title = 'System Hardening';
-
--- Week 6 quiz
-insert into public.quiz_questions (quiz_id, question, options, correct_index, points, position)
-select q.id, o.question, o.options, o.correct_index, o.points, o.position
-from public.quizzes q,
-jsonb_to_recordset('[
-  {"question":"`Login'' OR 1=1 --` is an example of which attack?","options":["XSS","SQL injection","Phishing","Brute force"],"correct_index":1,"points":1,"position":0},
-  {"question":"What does XSS stand for?","options":["Extra Site Security","Cross-Site Scripting","Extreme Session Scan","XML Site Syntax"],"correct_index":1,"points":1,"position":1},
-  {"question":"The BEST firewall posture is…","options":["Allow all, block known bad","Default deny, allow explicitly","Deny after 5 failures","Log only"],"correct_index":1,"points":1,"position":2},
-  {"question":"Which browser mechanism restricts what scripts a page can load?","options":["Zone ID","Content-Security-Policy","SameSite","MFA"],"correct_index":1,"points":1,"position":3},
-  {"question":"A web server placed in a DMZ is mainly to…","options":["Speed up the page","Isolate it from internal data","Save bandwidth","Hide the IP"],"correct_index":1,"points":1,"position":4}
-]'::jsonb) as o(question text, options jsonb, correct_index int, points int, position int)
-where q.title = 'Web & Network Defense';
-
--- Week 8 quiz
-insert into public.quiz_questions (quiz_id, question, options, correct_index, points, position)
-select q.id, o.question, o.options, o.correct_index, o.points, o.position
-from public.quizzes q,
-jsonb_to_recordset('[
-  {"question":"Which phase of incident response happens FIRST after an alert fires?","options":["Eradication","Containment","Recovery","Preparation"],"correct_index":1,"points":1,"position":0},
-  {"question":"Working directly on an original compromised disk is bad forensics because…","options":["It is slow","Evidence can be altered","No internet access","It voids the warranty"],"correct_index":1,"points":1,"position":1},
-  {"question":"A flag in a CTF is…","options":["A server restart","Proof of a finding","A firewall rule","A packet"],"correct_index":1,"points":1,"position":2},
-  {"question":"Which is a legal platform for practicing web attacks?","options":["A neighbor''s site","OWASP Juice Shop","The school grade portal","Any login page"],"correct_index":1,"points":1,"position":3},
-  {"question":"In ______, teams attack each other while defending their own servers.","options":["Jeopardy style","Attack-Defense","Capture-Only","SOC drilling"],"correct_index":1,"points":1,"position":4}
-]'::jsonb) as o(question text, options jsonb, correct_index int, points int, position int)
-where q.title = 'IR & Hacking Capstone';
+Write a two-paragraph career plan: which role you want, the first three skills you will learn, and your 90-day goal. Then complete one TryHackMe room and write down the single technique you learned$m8$
+where week_no = 8;
