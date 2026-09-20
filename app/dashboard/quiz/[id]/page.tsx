@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import QuizGame from "@/components/quiz/QuizGame";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +22,14 @@ export default async function QuizPlayPage({
 
   if (!quiz) notFound();
 
-  // Security: the safe view strips correct_index — answers never reach the
-  // client. Scoring happens server-side at submit time.
-  const { data: questions } = await supabase
-    .from("quiz_questions_public")
+  // Security: only safe columns are fetched server-side (no correct_index),
+  // and scoring happens server-side at submit time. The service-role client
+  // is used so RLS (which limits quiz_questions to mentors) can't leak the
+  // answers to the client — a public view would inherit that RLS and return
+  // zero rows to mentees.
+  const admin = getSupabaseAdmin();
+  const { data: questions } = await admin
+    .from("quiz_questions")
     .select("id, quiz_id, question, options, position")
     .eq("quiz_id", id)
     .order("position");
