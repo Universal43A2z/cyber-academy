@@ -11,8 +11,8 @@ export async function POST(req: Request) {
   // 1. Slow down credential harvesters / mailbox spam.
   const limit = rateLimit({
     key: "auth:otp",
-    limit: 5,
-    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    windowMs: 10 * 60 * 1000,
     req,
   });
   if (!limit.ok) {
