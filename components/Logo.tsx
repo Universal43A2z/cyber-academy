@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Logo({ href = "/", size = 40 }: { href?: string; size?: number }) {
+export default function Logo({ href = "/", size = 56 }: { href?: string; size?: number }) {
   return (
     <Link
       href={href}
@@ -20,7 +20,7 @@ export default function Logo({ href = "/", size = 40 }: { href?: string; size?: 
         <span className="pointer-events-none absolute inset-0 rounded-md opacity-0 transition group-hover:opacity-60" />
       </div>
       <div className="leading-tight">
-        <span className="font-mono text-sm font-bold tracking-widest text-cyber">
+        <span className="font-mono text-base font-bold tracking-widest text-cyber">
           F1 STACKMIND
         </span>
         <span className="block font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
