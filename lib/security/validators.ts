@@ -67,6 +67,12 @@ export const attendanceSchema = z.object({
   note: z.string().trim().max(200).optional().nullable(),
 });
 
+export const feedbackSchema = z.object({
+  subject: z.string().trim().min(3, "Subject is too short").max(120),
+  message: z.string().trim().min(5, "Message is too short").max(2000),
+  category: z.enum(["general", "bug", "content", "suggestion"]).optional(),
+});
+
 export const quizSubmitSchema = z.object({
   quiz_id: z.string().uuid(),
   answers: z.array(

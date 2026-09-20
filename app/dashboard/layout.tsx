@@ -24,7 +24,7 @@ export default async function DashboardLayout({
       <Navbar role="mentee" name={profile?.full_name} />
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</div>
       <footer className="border-t border-line py-4 text-center font-mono text-[11px] uppercase tracking-widest text-muted/70">
-        f1 stackmind cyber academy · mentee zone
+        f1 stackmind cyber academy · mentee zone · built by akira
       </footer>
     </div>
   );

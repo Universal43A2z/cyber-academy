@@ -10,6 +10,7 @@ const mentorLinks = [
   { href: "/mentor/modules", label: "Modules" },
   { href: "/mentor/quiz", label: "Quizzes" },
   { href: "/mentor/mentees", label: "Mentees" },
+  { href: "/mentor/feedback", label: "Feedback" },
   { href: "/mentor/logs", label: "Audit Logs" },
 ];
 
@@ -18,6 +19,7 @@ const menteeLinks = [
   { href: "/dashboard/modules", label: "Modules" },
   { href: "/dashboard/quiz", label: "Quizzes" },
   { href: "/dashboard/attendance", label: "Attendance" },
+  { href: "/dashboard/feedback", label: "Feedback" },
 ];
 
 export default function Navbar({

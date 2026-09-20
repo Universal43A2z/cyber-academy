@@ -82,6 +82,20 @@ export interface ActivityLog {
   created_at: string;
 }
 
+export type FeedbackCategory = "general" | "bug" | "content" | "suggestion";
+export type FeedbackStatus = "new" | "in_review" | "resolved";
+
+export interface FeedbackReport {
+  id: string;
+  user_id: string;
+  user_email: string;
+  subject: string;
+  message: string;
+  category: FeedbackCategory;
+  status: FeedbackStatus;
+  created_at: string;
+}
+
 export interface MenteePerformance {
   profile: Profile;
   attendance: { total: number; present: number; late: number; absent: number };

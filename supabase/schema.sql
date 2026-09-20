@@ -225,6 +225,34 @@ create policy "logs_select_mentor" on public.activity_logs
   for select using (public.is_mentor());
 
 -- =====================================================================
+-- Feedback reports — mentees report issues/feedback to the mentor
+-- =====================================================================
+create table if not exists public.feedback_reports (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  user_email  text not null,
+  subject     text not null,
+  message     text not null,
+  category    text not null default 'general'
+              check (category in ('general', 'bug', 'content', 'suggestion')),
+  status      text not null default 'new'
+              check (status in ('new', 'in_review', 'resolved')),
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists feedback_reports_user_id_idx on public.feedback_reports (user_id);
+create index if not exists feedback_reports_status_idx  on public.feedback_reports (status);
+
+create policy "feedback_select_own_or_mentor" on public.feedback_reports
+  for select using (user_id = auth.uid() or public.is_mentor());
+
+create policy "feedback_insert_own" on public.feedback_reports
+  for insert with check (user_id = auth.uid());
+
+create policy "feedback_update_mentor" on public.feedback_reports
+  for update using (public.is_mentor()) with check (public.is_mentor());
+
+-- =====================================================================
 -- GRANTS
 -- =====================================================================
 grant usage on schema public to anon, authenticated;
@@ -236,4 +264,5 @@ grant select                    on public.quizzes               to authenticated
 grant select                    on public.quiz_questions_public to authenticated;
 grant select, insert            on public.quiz_attempts         to authenticated;
 grant select                    on public.activity_logs         to authenticated;
+grant select, insert, update    on public.feedback_reports     to authenticated;
 grant execute on function public.is_mentor() to authenticated;
