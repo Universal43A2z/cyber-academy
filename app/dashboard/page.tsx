@@ -68,7 +68,7 @@ export default async function DashboardHome() {
       const tot = row.totals.reduce((s, t) => s + t, 0) || 1;
       const avg = Math.round((row.scores.reduce((s, x) => s + x, 0) / tot) * 100);
       const best = Math.max(...row.scores);
-      return { name: p.full_name || p.email, avg, best };
+      return { id: p.id, name: p.full_name || p.email, avg, best };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)
     .sort((a, b) => b.avg - a.avg)
@@ -160,7 +160,7 @@ export default async function DashboardHome() {
                 <li
                   key={r.name}
                   className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${
-                    r.name === (profile?.full_name || profile?.role)
+                    r.id === uid
                       ? "border-cyber/50 bg-cyber/10"
                       : "border-line bg-panel-2"
                   }`}
