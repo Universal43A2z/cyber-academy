@@ -9,7 +9,26 @@ import {
   Gamepad2,
   CheckCircle2,
   Trash,
+  BarChart3,
+  X,
 } from "lucide-react";
+
+interface QuestionStat {
+  id: string;
+  position: number;
+  question: string;
+  options: string[];
+  correct_index: number;
+  attempted: number;
+  correct_count: number;
+  correct_pct: number | null;
+}
+
+interface QuizStats {
+  quiz: { id: string; title: string };
+  attempts: number;
+  items: QuestionStat[];
+}
 
 interface QuestionDraft {
   question: string;
@@ -59,6 +78,18 @@ export default function QuizBuilder() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [stats, setStats] = useState<{ quizId: string; data: QuizStats | null; error?: string } | null>(null);
+
+  async function openStats(id: string) {
+    setStats({ quizId: id, data: null });
+    const res = await fetch(`/api/mentor/quiz/stats?quiz_id=${id}`);
+    const data = await res.json();
+    if (data.error) {
+      setStats({ quizId: id, data: null, error: data.error });
+      return;
+    }
+    setStats({ quizId: id, data });
+  }
 
   async function load() {
     const res = await fetch("/api/mentor/quiz");
@@ -322,6 +353,9 @@ export default function QuizBuilder() {
                   <h3 className="font-semibold">{qz.title}</h3>
                 </div>
                 <div className="flex shrink-0 gap-2">
+                  <button onClick={() => openStats(qz.id)} className="btn-ghost !px-2.5 !py-1.5" title="Stats">
+                    <BarChart3 size={13} />
+                  </button>
                   <button onClick={() => edit(qz)} className="btn-ghost !px-2.5 !py-1.5" title="Edit">
                     <Pencil size={13} />
                   </button>
@@ -339,6 +373,65 @@ export default function QuizBuilder() {
           )}
         </div>
       </div>
+
+      {stats && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/85 p-6">
+          <div className="panel max-h-[85vh] w-full max-w-2xl overflow-y-auto p-6">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Question stats</h3>
+                <p className="mt-1 text-xs text-muted">
+                  {stats.data ? `${stats.data.quiz.title} · ${stats.data.attempts} attempt(s)` : "loading…"}
+                </p>
+              </div>
+              <button onClick={() => setStats(null)} className="btn-ghost !px-2.5 !py-1.5" title="Close">
+                <X size={15} />
+              </button>
+            </div>
+
+            {!stats.data ? (
+              <div className="flex items-center gap-3 font-mono text-sm text-cyber">
+                <Loader2 size={16} className="animate-spin" /> aggregating answers…
+              </div>
+            ) : stats.error ? (
+              <p className="text-sm text-danger">{stats.error}</p>
+            ) : stats.data.items.length ? (
+              <div className="space-y-4">
+                {stats.data.items.map((it) => {
+                  const bar = it.correct_pct ?? 0;
+                  const barColor = bar >= 75 ? "bg-cyber" : bar >= 50 ? "bg-warn" : "bg-danger";
+                  return (
+                    <div key={it.id} className="rounded-lg border border-line bg-panel-2 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold">
+                          <span className="mr-2 font-mono text-xs text-muted">Q{it.position + 1}</span>
+                          {it.question}
+                        </p>
+                        <span className="shrink-0 font-mono text-xs tabular text-muted">
+                          {it.correct_count}/{it.attempted} correct
+                        </span>
+                      </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-panel">
+                        <div className={`h-full ${barColor}`} style={{ width: `${bar}%` }} />
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[11px]">
+                        <span className="font-mono uppercase tracking-wider text-cyber">
+                          correct: {String.fromCharCode(65 + it.correct_index)}
+                        </span>
+                        <span className="font-mono text-muted">
+                          {it.attempted ? `${it.correct_pct}% answered correctly` : "no answers yet"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">No questions on this quiz.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

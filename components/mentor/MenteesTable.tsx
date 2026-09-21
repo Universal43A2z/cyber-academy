@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Users,
   CalendarCheck,
@@ -8,6 +9,7 @@ import {
   BookOpen,
   CircleDot,
   Loader2,
+  FileText,
 } from "lucide-react";
 import type { MenteePerformance } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -78,6 +80,12 @@ export default function MenteesTable() {
                 <td className="px-4 py-3">
                   <p className="font-semibold">{m.profile.full_name || "—"}</p>
                   <p className="font-mono text-[11px] text-muted">{m.profile.email}</p>
+                  <Link
+                    href={`/mentor/mentees/${m.profile.id}/report`}
+                    className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider text-cyber hover:underline"
+                  >
+                    <FileText size={11} /> report / pdf
+                  </Link>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">

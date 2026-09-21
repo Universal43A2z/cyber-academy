@@ -56,6 +56,16 @@ export const verifyOtpSchema = z.object({
   password: passwordSchema.optional(),
 });
 
+export const resetSendSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetConfirmSchema = z.object({
+  email: emailSchema,
+  token: otpSchema,
+  password: passwordSchema,
+});
+
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required").max(72),
@@ -71,6 +81,11 @@ export const feedbackSchema = z.object({
   subject: z.string().trim().min(3, "Subject is too short").max(120),
   message: z.string().trim().min(5, "Message is too short").max(2000),
   category: z.enum(["general", "bug", "content", "suggestion"]).optional(),
+});
+
+export const announcementSchema = z.object({
+  title: z.string().trim().min(3, "Title is too short").max(120),
+  body: z.string().trim().min(5, "Announcement is too short").max(2000),
 });
 
 export const quizSubmitSchema = z.object({

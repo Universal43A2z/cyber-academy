@@ -24,6 +24,7 @@ export default async function ModulesPage() {
     .eq("user_id", uid);
 
   const done = new Set((progress ?? []).filter((p) => p.completed).map((p) => p.module_id));
+  const pct = modules?.length ? Math.round((done.size / modules.length) * 100) : 0;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -37,6 +38,16 @@ export default async function ModulesPage() {
         <span className="chip">
           <LockOpen size={11} /> {done.size}/{modules?.length ?? 0} complete
         </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-panel-2">
+          <div
+            className="h-full bg-cyber transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="w-12 text-right font-mono text-xs font-bold tabular text-cyber">{pct}%</span>
       </div>
 
       <div className="space-y-3">

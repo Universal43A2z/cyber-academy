@@ -7,6 +7,7 @@ import Logo from "./Logo";
 
 const mentorLinks = [
   { href: "/mentor", label: "Overview" },
+  { href: "/mentor/announcements", label: "Announcements" },
   { href: "/mentor/modules", label: "Modules" },
   { href: "/mentor/quiz", label: "Quizzes" },
   { href: "/mentor/mentees", label: "Mentees" },
@@ -20,6 +21,7 @@ const menteeLinks = [
   { href: "/dashboard/quiz", label: "Quizzes" },
   { href: "/dashboard/attendance", label: "Attendance" },
   { href: "/dashboard/feedback", label: "Feedback" },
+  { href: "/dashboard/profile", label: "Profile" },
 ];
 
 export default function Navbar({

@@ -35,6 +35,7 @@ export default function AuthForm() {
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [stage, setStage] = useState<Stage>("form");
+  const [resetStage, setResetStage] = useState<"email" | "code" | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -130,6 +131,47 @@ export default function AuthForm() {
     sendOtp({ preventDefault: () => {} } as FormEvent);
   }
 
+  async function sendReset(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    const res = await fetch("/api/auth/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "send", email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (data.error) {
+      setMsg({ ok: false, text: data.error });
+      return;
+    }
+    setMsg({ ok: true, text: data.message ?? "Check your inbox for the reset code." });
+    setResetStage("code");
+  }
+
+  async function confirmReset(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    const res = await fetch("/api/auth/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "confirm", email, token: otp, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (data.error) {
+      setMsg({ ok: false, text: data.error });
+      return;
+    }
+    setMsg({ ok: true, text: data.message ?? "Password updated." });
+    setOtp("");
+    setPassword("");
+    setResetStage(null);
+    setMode("login");
+  }
+
   const tabs: { id: Mode; label: string }[] = [
     { id: "login", label: "Password login" },
     { id: "otp", label: "OTP login" },
@@ -140,20 +182,143 @@ export default function AuthForm() {
     <div className="panel w-full max-w-md p-6 sm:p-8">
       <div className="mb-6">
         <h1 className="font-mono text-lg font-bold uppercase tracking-widest">
-          {stage === "otp"
-            ? "Verify your code"
-            : mode === "signup"
-              ? "Create account"
-              : "Secure access"}
+          {resetStage
+            ? "Reset password"
+            : stage === "otp"
+              ? "Verify your code"
+              : mode === "signup"
+                ? "Create account"
+                : "Secure access"}
         </h1>
         <p className="mt-1 text-xs text-muted">
-          {stage === "otp"
-            ? `A 6-digit code was sent to ${email}.`
-            : "Authenticated, logged, and limited."}
+          {resetStage
+            ? resetStage === "email"
+              ? "We will email you a 6-digit reset code."
+              : `Enter the code sent to ${email} and pick a new password.`
+            : stage === "otp"
+              ? `A 6-digit code was sent to ${email}.`
+              : "Authenticated, logged, and limited."}
         </p>
       </div>
 
-      {stage === "otp" ? (
+      {resetStage ? (
+        <div className="space-y-4">
+          {msg && (
+            <div
+              className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${
+                msg.ok
+                  ? "border-cyber/40 bg-cyber/10 text-cyber"
+                  : "border-danger/40 bg-danger/10 text-danger"
+              }`}
+            >
+              {msg.ok ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+              <span>{msg.text}</span>
+            </div>
+          )}
+
+          {resetStage === "email" ? (
+            <form onSubmit={sendReset} className="space-y-4">
+              <div>
+                <label className="label" htmlFor="resetEmail">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    id="resetEmail"
+                    className="input pl-9"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@school.edu"
+                    required
+                  />
+                </div>
+              </div>
+              <button className="btn-primary w-full" disabled={busy}>
+                {busy ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
+                Send reset code
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMsg(null);
+                  setResetStage(null);
+                }}
+                className="w-full text-center font-mono text-[11px] uppercase tracking-widest text-muted transition hover:text-cyber"
+              >
+                ← Back to sign in
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={confirmReset} className="space-y-4">
+              <div>
+                <label className="label" htmlFor="resetOtp">
+                  One-time passcode
+                </label>
+                <input
+                  id="resetOtp"
+                  className="input text-center font-mono text-2xl tracking-[0.5em]"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="000000"
+                  required
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="resetPw">
+                  New password
+                </label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    id="resetPw"
+                    className="input pl-9"
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="e.g. Str0ng!Pass"
+                    required
+                  />
+                </div>
+                <ul className="mt-2 grid grid-cols-1 gap-1">
+                  {PASSWORD_RULES.map((r) => {
+                    const ok = r.test(password);
+                    return (
+                      <li key={r.label} className={`flex items-center gap-1.5 text-[11px] ${ok ? "text-cyber" : "text-muted/60"}`}>
+                        {ok ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
+                        {r.label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+              <button
+                className="btn-primary w-full"
+                disabled={busy || otp.length !== 6 || !passwordOk}
+              >
+                {busy ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+                Set new password
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMsg(null);
+                  setResetStage("email");
+                }}
+                className="w-full text-center font-mono text-[11px] uppercase tracking-widest text-muted transition hover:text-cyber"
+              >
+                ← Use a different email
+              </button>
+            </form>
+          )}
+        </div>
+      ) : stage === "otp" ? (
         <form onSubmit={verify} className="space-y-4">
           <div>
             <label className="label" htmlFor="otp">
@@ -404,6 +569,18 @@ export default function AuthForm() {
                   : "Sign in"}
             </button>
           </form>
+          {mode === "login" && (
+            <button
+              type="button"
+              onClick={() => {
+                setMsg(null);
+                setResetStage("email");
+              }}
+              className="mt-4 w-full text-center font-mono text-[11px] uppercase tracking-widest text-muted transition hover:text-cyber"
+            >
+              Forgot password?
+            </button>
+          )}
         </>
       )}
     </div>

@@ -162,3 +162,41 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- print / save-as-pdf ---------- */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  header,
+  footer,
+  .print-hidden,
+  .no-print {
+    display: none !important;
+  }
+  .panel {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+  }
+  .text-muted,
+  .chip,
+  p,
+  span,
+  td,
+  th {
+    color: #111827 !important;
+  }
+  .text-cyber,
+  .text-danger,
+  .text-warn {
+    color: #111827 !important;
+  }
+  a {
+    text-decoration: none;
+  }
+}

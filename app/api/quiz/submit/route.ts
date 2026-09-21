@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     .order("position");
 
   const marked: { question_index: number; selected: number; correct: boolean }[] = [];
+  const review: { question_index: number; selected: number; correct: boolean; correct_index: number }[] = [];
   let score = 0;
   let total = 0;
   const qs = questions ?? [];
@@ -49,7 +50,11 @@ export async function POST(req: Request) {
     const selected = answer?.selected ?? -1;
     const correct = q.correct_index === selected;
     if (correct) score += q.points;
+    // Only the response receives the answer key (post submission, for the
+    // review screen). The stored row keeps just the plain marks so the key
+    // is never readable by mentees from their own attempt records.
     marked.push({ question_index: qs.indexOf(q), selected, correct });
+    review.push({ question_index: qs.indexOf(q), selected, correct, correct_index: q.correct_index });
   }
 
   const { data: attempt, error } = await admin
@@ -85,6 +90,6 @@ export async function POST(req: Request) {
     total,
     correct: score,
     percentage: total > 0 ? Math.round((score / total) * 100) : 0,
-    review: marked,
+    review,
   });
 }

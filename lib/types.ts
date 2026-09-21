@@ -72,6 +72,14 @@ export interface QuizAttempt {
   finished_at: string;
 }
 
+export interface Announcement {
+  id: string;
+  author_name: string;
+  title: string;
+  body: string;
+  created_at: string;
+}
+
 export interface ActivityLog {
   id: string;
   user_id: string | null;

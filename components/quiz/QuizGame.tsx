@@ -23,6 +23,7 @@ interface ReviewItem {
   question_index: number;
   selected: number;
   correct: boolean;
+  correct_index: number;
 }
 
 export default function QuizGame({
@@ -189,23 +190,45 @@ export default function QuizGame({
         )}
 
         <div className="mt-6 space-y-2">
-          {result.review.map((r) => (
-            <div
-              key={r.question_index}
-              className="flex items-center gap-3 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm"
-            >
-              {r.correct ? (
-                <CheckCircle2 size={16} className="shrink-0 text-cyber" />
-              ) : (
-                <XCircle size={16} className="shrink-0 text-danger" />
-              )}
-              <span className="font-mono text-xs text-muted">
-                Q{r.question_index + 1}
-              </span>
-              <span className="font-mono text-xs">{r.selected >= 0 ? `your answer #${r.selected + 1}` : "unanswered"}</span>
-            </div>
-          ))}
+          {result.review.map((r) => {
+            const qs = quiz.questions.find((q) => q.position === r.question_index);
+            return (
+              <div
+                key={r.question_index}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm"
+              >
+                {r.correct ? (
+                  <CheckCircle2 size={16} className="shrink-0 text-cyber" />
+                ) : (
+                  <XCircle size={16} className="shrink-0 text-danger" />
+                )}
+                <span className="font-mono text-xs text-muted">
+                  Q{r.question_index + 1}
+                </span>
+                {r.selected >= 0 ? (
+                  <span className="font-mono text-xs">
+                    your answer: <span className={r.correct ? "text-cyber" : "text-danger"}>{String.fromCharCode(65 + r.selected)}</span>
+                  </span>
+                ) : (
+                  <span className="font-mono text-xs text-muted">unanswered</span>
+                )}
+                {!r.correct && (
+                  <span className="font-mono text-xs text-cyber">
+                    correct: {String.fromCharCode(65 + r.correct_index)}
+                  </span>
+                )}
+                {!r.correct && qs && (
+                  <span className="w-full text-[11px] text-muted">
+                    → {qs.options[r.correct_index]}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
+        <p className="mt-3 text-[11px] text-muted/70">
+          Answer key is shown only after submission, so it can never be copied mid-quiz.
+        </p>
 
         <button onClick={() => router.push("/dashboard/quiz")} className="btn-ghost mt-6 w-full">
           <ArrowLeft size={14} /> Back to quizzes

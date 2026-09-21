@@ -253,6 +253,28 @@ create policy "feedback_update_mentor" on public.feedback_reports
   for update using (public.is_mentor()) with check (public.is_mentor());
 
 -- =====================================================================
+-- Announcements — mentors broadcast, every authenticated user reads
+-- =====================================================================
+create table if not exists public.announcements (
+  id          uuid primary key default gen_random_uuid(),
+  author_name text not null,
+  title       text not null,
+  body        text not null,
+  created_by  uuid references auth.users(id) on delete set null,
+  created_at  timestamptz not null default now()
+);
+
+alter table public.announcements enable row level security;
+
+create index if not exists announcements_created_idx on public.announcements (created_at desc);
+
+create policy "announcements_select_auth" on public.announcements
+  for select using (auth.uid() is not null);
+
+create policy "announcements_write_mentor" on public.announcements
+  for all using (public.is_mentor()) with check (public.is_mentor());
+
+-- =====================================================================
 -- GRANTS
 -- =====================================================================
 grant usage on schema public to anon, authenticated;
@@ -265,4 +287,6 @@ grant select                    on public.quiz_questions_public to authenticated
 grant select, insert            on public.quiz_attempts         to authenticated;
 grant select                    on public.activity_logs         to authenticated;
 grant select, insert, update    on public.feedback_reports     to authenticated;
+grant select                    on public.announcements        to authenticated;
+grant insert, update, delete    on public.announcements        to authenticated;
 grant execute on function public.is_mentor() to authenticated;
