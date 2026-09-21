@@ -11,8 +11,25 @@ export default function MarkdownLite({ text }: { text: string }) {
   let key = 0;
 
   const inline = (raw: string) => {
-    const parts = raw.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+    const parts = raw.split(/(\[[^\]\[\*]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`)/g);
     return parts.map((p, i) => {
+      if (p.startsWith("[") && p.endsWith(")")) {
+        const m = p.match(/^\[([^\]]+)\]\((.+)\)$/);
+        if (m && /^https?:\/\//.test(m[2])) {
+          return (
+            <a
+              key={i}
+              href={m[2]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-cyber underline decoration-cyber/40 underline-offset-2 transition hover:text-cyber-bright"
+            >
+              {inline(m[1])}
+            </a>
+          );
+        }
+        return <span key={i}>{p}</span>;
+      }
       if (p.startsWith("**") && p.endsWith("**")) {
         return <strong key={i} className="text-foreground">{p.slice(2, -2)}</strong>;
       }

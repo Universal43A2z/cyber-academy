@@ -53,8 +53,6 @@ for (const m of roleModules) {
       method: "PATCH",
       headers,
       body: JSON.stringify(body),
-      // @ts-ignore - some Node versions want this header to see the body
-      ...{},
     });
     console.log(`week ${m.week_no}: updated (${res.status})`);
   } else {
