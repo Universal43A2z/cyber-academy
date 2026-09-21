@@ -222,7 +222,7 @@ export default function LandPage() {
       </section>
 
       <footer className="relative z-10 border-t border-line py-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 md:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center">
           <Logo size={48} />
           <p className="font-mono text-xs text-muted/70">
             © {new Date().getFullYear()} F1 STACKMIND · secure by design · built by akira · deployed on Vercel + Supabase
