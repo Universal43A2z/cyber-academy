@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { currentWeekNo, weekLabel, formatDate } from "@/lib/utils";
+import { currentWeekNo, weekLabel, formatDate, unlockedModuleIds } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function DashboardHome() {
 
   const week = currentWeekNo();
 
-  const [{ data: profile }, { data: attendances }, { data: modules }, { data: attempts }, { data: progress }, { data: thisWeekModule }, { data: announcements }] =
+  const [{ data: profile }, { data: attendances }, { data: modules }, { data: attempts }, { data: progress }, { data: announcements }] =
     await Promise.all([
       supabase.from("profiles").select("full_name, role").eq("id", uid).maybeSingle(),
       supabase.from("attendances").select("*").eq("user_id", uid),
@@ -34,7 +34,6 @@ export default async function DashboardHome() {
         .eq("user_id", uid)
         .order("finished_at", { ascending: false }),
       supabase.from("module_progress").select("module_id, completed").eq("user_id", uid),
-      supabase.from("modules").select("*").eq("week_no", week).eq("published", true).maybeSingle(),
       supabase
         .from("announcements")
         .select("*")
@@ -84,6 +83,11 @@ export default async function DashboardHome() {
   const done = progress?.filter((p) => p.completed).length ?? 0;
   const modulesTotal = modules?.length ?? 0;
   const modulePct = modulesTotal ? Math.round((done / modulesTotal) * 100) : 0;
+
+  const doneSet = new Set((progress ?? []).filter((p) => p.completed).map((p) => p.module_id));
+  const unlocked = unlockedModuleIds(modules ?? [], doneSet);
+  const nextModule =
+    (modules ?? []).find((m) => unlocked.has(m.id) && !doneSet.has(m.id)) ?? null;
 
   const hasQuiz = (attempts?.length ?? 0) > 0;
   const perfect = (attempts ?? []).some((a) => a.score === a.total);
@@ -261,7 +265,11 @@ export default async function DashboardHome() {
           <BookOpen size={20} className="mb-2 text-cyber" />
           <h3 className="font-semibold">Weekly modules</h3>
           <p className="mt-1 text-sm text-muted">
-            {thisWeekModule ? `This week: ${thisWeekModule.title}` : "No module published for this week yet."}
+            {!modulesTotal
+              ? "No modules published yet."
+              : nextModule
+                ? `Next up: ${nextModule.title}`
+                : "All modules complete — await next week's lesson."}
           </p>
         </Link>
         <Link href="/dashboard/quiz" className="panel panel-hover group p-5">
