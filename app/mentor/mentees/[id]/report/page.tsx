@@ -97,7 +97,7 @@ export default async function MenteeReportPage({
         <div className="mb-6 flex items-start justify-between gap-4 border-b border-line pb-5">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted">
-              F1 STACKMIND Cyber Academy · mentee report
+              F1STACKMIND Cyber Academy · mentee report
             </p>
             <h1 className="mt-1 text-2xl font-bold">{profile.full_name || "Mentee"}</h1>
             <p className="mt-1 text-sm text-muted">
@@ -231,7 +231,7 @@ export default async function MenteeReportPage({
         </div>
 
         <p className="mt-6 border-t border-line pt-4 font-mono text-[11px] uppercase tracking-widest text-muted">
-          f1 stackmind cyber academy · mentor export · built by akira
+          f1stackmind cyber academy · mentor export · built by akira
         </p>
       </div>
     </div>

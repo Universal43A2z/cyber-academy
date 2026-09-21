@@ -1,5 +1,5 @@
 -- =====================================================================
--- F1 STACKMIND Cyber Academy — Supabase schema
+-- F1STACKMIND Cyber Academy — Supabase schema
 -- Run this whole file in the Supabase SQL editor (Dashboard > SQL > New query)
 -- It creates every table, the audit trigger, RLS policies and a security view.
 -- The seed data lives in seed.sql (run after this file).

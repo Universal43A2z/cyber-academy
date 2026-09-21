@@ -6,12 +6,12 @@ export default function Logo({ href = "/", size = 84 }: { href?: string; size?: 
     <Link
       href={href}
       className="group inline-flex items-center gap-3"
-      aria-label="F1 STACKMIND home"
+      aria-label="F1STACKMIND home"
     >
       <div className="relative">
         <Image
-          src="/f1-stackmind-logo.png"
-          alt="F1 STACKMIND logo"
+          src="/f1stackmind-logo.png"
+          alt="F1STACKMIND logo"
           width={size}
           height={size}
           className="rounded-md object-contain transition group-hover:drop-shadow-[0_0_10px_rgba(0,255,163,0.6)]"
@@ -21,7 +21,7 @@ export default function Logo({ href = "/", size = 84 }: { href?: string; size?: 
       </div>
       <div className="leading-tight">
         <span className="font-mono text-lg font-bold tracking-widest text-cyber">
-          F1 STACKMIND
+          F1STACKMIND
         </span>
         <span className="block font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
           cyber academy

@@ -1,5 +1,5 @@
 -- =====================================================================
--- F1 STACKMIND Cyber Academy — seed data
+-- F1STACKMIND Cyber Academy — seed data
 -- Run AFTER schema.sql. Idempotent: safe to re-run.
 -- =====================================================================
 

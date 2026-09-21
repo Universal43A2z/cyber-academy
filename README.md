@@ -1,10 +1,10 @@
-# F1 STACKMIND Cyber Academy
+# F1STACKMIND Cyber Academy
 
 A cybersecurity **career-training platform** that connects **mentors** and **mentees** through weekly lessons, automatic OTP-verified accounts, attendance, and anti-copy quiz games — built with an 8-layer security model.
 
 - **Frontend / hosting:** Next.js 16 (App Router) on **Vercel**
 - **Backend & database:** **Supabase** (Auth, Postgres, Row Level Security)
-- **Design:** dark cybersecurity terminal theme with the F1 STACKMIND logo
+- **Design:** dark cybersecurity terminal theme with the F1STACKMIND logo
 
 ---
 

@@ -138,7 +138,7 @@ export default function LandPage() {
             <span className="text-cyber">cyber defenders</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
-            F1 STACKMIND Cyber Academy connects mentors with mentees through weekly
+            F1STACKMIND Cyber Academy connects mentors with mentees through weekly
             security modules, automated attendance, and gamified quizzes — wrapped in
             an eight-layer security model.
           </p>
@@ -201,7 +201,7 @@ export default function LandPage() {
       <section className="relative z-10 mx-auto max-w-7xl px-4 py-16">
         <div className="terminal p-8 md:p-12">
           <p className="mb-2 font-mono text-xs uppercase tracking-widest text-cyber">
-            $ f1-stackmind --enroll
+            $ f1stackmind --enroll
           </p>
           <h2 className="mb-3 text-2xl font-bold md:text-3xl">
             Ready to secure your seat in the cyber career track?
@@ -225,7 +225,7 @@ export default function LandPage() {
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center">
           <Logo size={48} />
           <p className="font-mono text-xs text-muted/70">
-            © {new Date().getFullYear()} F1 STACKMIND · secure by design · built by akira · deployed on Vercel + Supabase
+            © {new Date().getFullYear()} F1STACKMIND · secure by design · built by akira · deployed on Vercel + Supabase
           </p>
         </div>
       </footer>

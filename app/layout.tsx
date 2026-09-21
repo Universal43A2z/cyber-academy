@@ -13,10 +13,10 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "F1 STACKMIND Cyber Academy",
+  title: "F1STACKMIND Cyber Academy",
   description:
     "A cybersecurity career training platform for mentors and mentees. Weekly modules, OTP-verified accounts, attendance, and quiz challenges.",
-  icons: [{ rel: "icon", url: "/f1-stackmind-logo.png" }],
+  icons: [{ rel: "icon", url: "/f1stackmind-logo.png" }],
 };
 
 export const viewport: Viewport = {

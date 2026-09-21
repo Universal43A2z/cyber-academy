@@ -1,4 +1,4 @@
-# F1 STACKMIND Cyber Academy
+# F1STACKMIND Cyber Academy
 
 ## System Documentation
 
@@ -6,7 +6,7 @@
 
 **Prepared by:** Akira  
 **Project type:** Web-based Learning Management System  
-**Project title:** F1 STACKMIND Cyber Academy — A Cybersecurity Career-Training Platform for Mentors and Mentees  
+**Project title:** F1STACKMIND Cyber Academy — A Cybersecurity Career-Training Platform for Mentors and Mentees  
 **Date:** September 2026  
 
 ---
@@ -31,11 +31,11 @@
 
 ## 1.1 Project Background
 
-F1 STACKMIND classes deliver a structured cybersecurity internship program. The program is built around weekly lessons, quizzes, and attendance tracking that a mentor supervises over an eight-week period.
+F1STACKMIND classes deliver a structured cybersecurity internship program. The program is built around weekly lessons, quizzes, and attendance tracking that a mentor supervises over an eight-week period.
 
 Conventionally, such programs were administered manually: lessons were shared as files, attendance was recorded on paper or spreadsheet, and quiz results were tallied by hand. This created several problems: content was easy to distribute but difficult to version, quiz answers could not be protected against copying, attendance records were scattered, and the mentor had no consolidated view of each mentee's progress.
 
-The F1 STACKMIND Cyber Academy is a web application that digitizes the whole program. It provides a mentee portal for reading weekly lessons, answering anti-copy quizzes, marking attendance, and sending feedback, and a mentor portal for publishing content, building quizzes, monitoring mentee performance, and reviewing an audit trail.
+The F1STACKMIND Cyber Academy is a web application that digitizes the whole program. It provides a mentee portal for reading weekly lessons, answering anti-copy quizzes, marking attendance, and sending feedback, and a mentor portal for publishing content, building quizzes, monitoring mentee performance, and reviewing an audit trail.
 
 ## 1.2 Statement of the Problem
 
@@ -47,7 +47,7 @@ The F1 STACKMIND Cyber Academy is a web application that digitizes the whole pro
 
 ## 1.3 Objectives
 
-**General objective** — To develop F1 STACKMIND Cyber Academy, a secure web platform that delivers, tracks, and supervises an eight-week cybersecurity training program for mentees under a mentor.
+**General objective** — To develop F1STACKMIND Cyber Academy, a secure web platform that delivers, tracks, and supervises an eight-week cybersecurity training program for mentees under a mentor.
 
 **Specific objectives:**
 
@@ -385,7 +385,7 @@ Open `https://cyber-academy-sooty.vercel.app`. Choose **Sign in** from the landi
 ## 8.2 Creating an Account
 
 1. Enter your email address.
-2. For mentor signup, enter the secret access code provided by the F1 STACKMIND program.
+2. For mentor signup, enter the secret access code provided by the F1STACKMIND program.
 3. Enter the six-digit code emailed to you.
 4. Set a password that is at least eight characters and contains an uppercase letter, a lowercase letter, a number, and a special character.
 
@@ -438,7 +438,7 @@ Open `https://cyber-academy-sooty.vercel.app`. Choose **Sign in** from the landi
 
 # Chapter 10 — Conclusion
 
-F1 STACKMIND Cyber Academy meets its stated objectives. It delivers the eight-week curriculum through a mentee portal, protects quiz integrity with anti-copy controls and server-side scoring, centralizes attendance and performance data for mentors, verifies email ownership with OTP, and maintains a complete audit trail for every sensitive action. The layered security model — transport hardening, authentication, OTP gating, Row Level Security, role checks, rate limiting, validation, and application guards — keeps correct quiz answers, session data, and service credentials out of the browser and out of the hands of unauthorized users.
+F1STACKMIND Cyber Academy meets its stated objectives. It delivers the eight-week curriculum through a mentee portal, protects quiz integrity with anti-copy controls and server-side scoring, centralizes attendance and performance data for mentors, verifies email ownership with OTP, and maintains a complete audit trail for every sensitive action. The layered security model — transport hardening, authentication, OTP gating, Row Level Security, role checks, rate limiting, validation, and application guards — keeps correct quiz answers, session data, and service credentials out of the browser and out of the hands of unauthorized users.
 
 The system was verified through type checks, linting, a successful production build, database seeding, functional test cases, and a live deployment. It is ready for demonstration to mentors, faculty, and the dean, and can be extended with SMTP mail, shared rate limiting, login conveniences, and per-mentee reporting as listed in the recommendations.
 

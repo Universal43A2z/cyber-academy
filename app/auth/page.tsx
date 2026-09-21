@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Logo from "@/components/Logo";
 import AuthForm from "@/components/auth/AuthForm";
 
-export const metadata = { title: "Sign in · F1 STACKMIND Cyber Academy" };
+export const metadata = { title: "Sign in · F1STACKMIND Cyber Academy" };
 
 export default function AuthPage() {
   return (

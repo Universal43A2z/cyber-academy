@@ -1,4 +1,4 @@
--- F1 STACKMIND Cyber Academy — announcements
+-- F1STACKMIND Cyber Academy — announcements
 -- Run this once in the Supabase SQL editor (idempotent, safe to re-run).
 
 create table if not exists public.announcements (
