@@ -31,6 +31,7 @@ export default function AuthForm() {
   const searchParams = useSearchParams();
   const initialMode: Mode =
     searchParams.get("mode") === "signup" ? "signup" : "login";
+  const expired = searchParams.get("expired") === "1";
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [stage, setStage] = useState<Stage>("form");
@@ -207,6 +208,16 @@ export default function AuthForm() {
               </button>
             ))}
           </div>
+
+          {expired && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
+              <KeyRound size={14} className="mt-0.5 shrink-0" />
+              <span>
+                You were signed out automatically after 20 minutes without
+                activity. Please sign in again.
+              </span>
+            </div>
+          )}
 
           {msg && (
             <div

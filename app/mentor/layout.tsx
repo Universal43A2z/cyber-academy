@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
+import InactiveLogout from "@/components/InactiveLogout";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function MentorLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
+      <InactiveLogout />
       <Navbar role="mentor" name={profile?.full_name} />
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</div>
       <footer className="border-t border-line py-4 text-center font-mono text-[11px] uppercase tracking-widest text-muted/70">

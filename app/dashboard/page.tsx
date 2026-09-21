@@ -55,7 +55,7 @@ export default async function DashboardHome() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            session: {profile?.role ?? "mentee"} · inactive after 30min
+            session: {profile?.role ?? "mentee"} · auto-logout after 20min idle
           </p>
           <h1 className="mt-1 text-2xl font-bold md:text-3xl">
             Welcome back, <span className="text-cyber">{profile?.full_name?.trim().split(/\s+/)[0] || "operator"}</span>
