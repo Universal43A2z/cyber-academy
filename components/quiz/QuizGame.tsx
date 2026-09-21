@@ -138,7 +138,11 @@ export default function QuizGame({
       <div className="panel max-w-lg p-6 text-center md:p-8">
         <Lock size={26} className="mx-auto mb-3 text-cyber" />
         <h1 className="font-mono text-lg font-bold uppercase tracking-widest">{quiz.title}</h1>
-        <p className="mt-1 text-sm text-muted">Week {quiz.week_no} quiz game</p>
+        <p className="mt-1 text-sm text-muted">
+          {/^Monthly Exam/i.test(quiz.title)
+            ? "Monthly exam covering four modules"
+            : `Module ${quiz.week_no} quiz — one attempt, saved as your best score`}
+        </p>
         <div className="mt-5 grid grid-cols-2 gap-3 text-left">
           <div className="rounded-lg border border-line bg-panel-2 p-3">
             <p className="font-mono text-xl font-bold tabular text-cyber">{quiz.questions.length}</p>

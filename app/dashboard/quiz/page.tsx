@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Gamepad2, Lock, StopCircle } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { weekLabel } from "@/lib/utils";
+
+const isExam = (title: string) => /^Monthly Exam/i.test(title);
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,9 @@ export default async function QuizListPage() {
                   <Gamepad2 size={20} className="mt-0.5 shrink-0 text-cyber" />
                   <div>
                     <p className="font-mono text-[11px] uppercase tracking-widest text-cyber">
-                      {weekLabel(qz.week_no)} challenge · {Math.floor(qz.time_limit_sec / 60)} min
+                      {isExam(qz.title)
+                        ? `monthly exam · ${Math.floor(qz.time_limit_sec / 60)} min`
+                        : `module ${String(qz.week_no).padStart(2, "0")} quiz · ${Math.floor(qz.time_limit_sec / 60)} min`}
                     </p>
                     <h2 className="mt-1 font-semibold">{qz.title}</h2>
                     {qz.description ? <p className="mt-1 text-sm text-muted">{qz.description}</p> : null}
