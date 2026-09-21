@@ -35,7 +35,19 @@ export async function POST(req: Request) {
     .single();
 
   if (error) {
-    return json({ error: "Could not submit feedback." }, 500);
+    // Distinguish infra (table missing) from real conflicts.
+    const missingTable = /schema cache|Could not find the table/i.test(error.message ?? "");
+    await auditLog({
+      action: "feedback.submit_failed",
+      userId: user.id,
+      email: user.email ?? undefined,
+      details: { subject, category, message: error.message },
+      ip: getClientIp(req),
+    });
+    return json(
+      { error: missingTable ? "Feedback isn't configured on this server yet — please notify the admin." : "Could not submit feedback." },
+      500
+    );
   }
 
   await auditLog({

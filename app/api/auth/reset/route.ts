@@ -103,7 +103,10 @@ export async function POST(req: Request) {
       password,
     });
     if (pwErr) {
-      return json({ error: "Could not update the password. Please try again." }, 500);
+      // Surface the real reason (e.g. the project's password policy rejecting
+      // a single letter-block with numbers/symbols only at the start/end) so
+      // the mentee knows what to change instead of a dead-end message.
+      return json({ error: pwErr.message || "Could not update the password. Please try again." }, 400);
     }
 
     await auditLog({
