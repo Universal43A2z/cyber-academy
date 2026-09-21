@@ -20,10 +20,19 @@ import AntiCopy from "./AntiCopy";
 type Phase = "intro" | "playing" | "submitting" | "done";
 
 interface ReviewItem {
+  question_id: string;
   question_index: number;
   selected: number;
   correct: boolean;
   correct_index: number;
+}
+
+interface DeckCard {
+  id: string;
+  question: string;
+  position: number;
+  orig: string[];
+  shuffled: { text: string; origIdx: number }[];
 }
 
 export default function QuizGame({
@@ -40,9 +49,20 @@ export default function QuizGame({
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("intro");
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<(number)[]>(() =>
-    quiz.questions.map(() => -1)
+  // Questions and options are shuffled once per attempt. recorded values are
+  // the ORIGINAL option indices, which the server grades against.
+  const [deck] = useState<DeckCard[]>(() =>
+    shuffle(
+      quiz.questions.map((q) => ({
+        id: q.id,
+        question: q.question,
+        position: q.position,
+        orig: q.options,
+        shuffled: shuffle(q.options.map((text, origIdx) => ({ text, origIdx }))),
+      }))
+    )
   );
+  const [answers, setAnswers] = useState<number[]>(() => deck.map(() => -1));
   const [timeLeft, setTimeLeft] = useState(quiz.time_limit_sec);
   const [violations, setViolations] = useState(0);
   const [cheatWarn, setCheatWarn] = useState(false);
@@ -70,8 +90,8 @@ export default function QuizGame({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quiz_id: quiz.id,
-          answers: finalAnswers.map((selected, question_index) => ({
-            question_index,
+          answers: finalAnswers.map((selected, i) => ({
+            question_id: deck[i].id,
             selected,
           })),
           started_at: startedAt.current,
@@ -88,7 +108,7 @@ export default function QuizGame({
       setResult(data);
       setPhase("done");
     },
-    [quiz.id, violations]
+    [quiz.id, violations, deck]
   );
 
   // Countdown.
@@ -116,22 +136,26 @@ export default function QuizGame({
 
   const answersRef = useRef(answers);
 
-  const onViolation = useCallback((count: number) => {
-    setViolations(count);
-    if (count >= 3) {
-      setCheatWarn(true);
-      submit(answersRef.current);
-    }
-  }, [submit]);
+  const onViolation = useCallback(
+    (count: number) => {
+      setViolations(count);
+      if (count >= 3) {
+        setCheatWarn(true);
+        submit(answersRef.current);
+      }
+    },
+    [submit]
+  );
 
-  function choose(o: number) {
-    const next = answers.map((v, i) => (i === index ? o : v));
+  function choose(origIdx: number) {
+    const next = answers.map((v, i) => (i === index ? origIdx : v));
     answersRef.current = next;
     setAnswers(next);
   }
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
+  const isExam = /^Monthly Exam/i.test(quiz.title);
 
   if (phase === "intro") {
     return (
@@ -139,14 +163,12 @@ export default function QuizGame({
         <Lock size={26} className="mx-auto mb-3 text-cyber" />
         <h1 className="font-mono text-lg font-bold uppercase tracking-widest">{quiz.title}</h1>
         <p className="mt-1 text-sm text-muted">
-          {/^Monthly Exam/i.test(quiz.title)
-            ? "Monthly exam covering four modules"
-            : `Module ${quiz.week_no} quiz — one attempt, saved as your best score`}
+          {isExam ? "Monthly exam covering four modules" : `Module ${quiz.week_no} quiz`}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-3 text-left">
           <div className="rounded-lg border border-line bg-panel-2 p-3">
-            <p className="font-mono text-xl font-bold tabular text-cyber">{quiz.questions.length}</p>
-            <p className="text-xs text-muted">questions</p>
+            <p className="font-mono text-xl font-bold tabular text-cyber">{deck.length}</p>
+            <p className="text-xs text-muted">questions · shuffled</p>
           </div>
           <div className="rounded-lg border border-line bg-panel-2 p-3">
             <p className="font-mono text-xl font-bold tabular text-cyber">{mm}:{ss}</p>
@@ -154,9 +176,10 @@ export default function QuizGame({
           </div>
         </div>
         <ul className="mt-5 space-y-1.5 text-left font-mono text-[11px] text-muted">
+          <li>• Questions and answer choices are shuffled for every attempt.</li>
           <li>• Answers are scored server-side — no answers exist in your browser.</li>
           <li>• Copy, paste, view-source and right-click are disabled.</li>
-          <li>• Leaving the tab counts as a violation (3 = auto-submit).</li>
+          <li>• Screenshots, printing, app-switching or leaving the tab are recorded (3 = auto-submit).</li>
         </ul>
         <button
           onClick={() => {
@@ -195,10 +218,11 @@ export default function QuizGame({
 
         <div className="mt-6 space-y-2">
           {result.review.map((r) => {
-            const qs = quiz.questions.find((q) => q.position === r.question_index);
+            const qi = deck.findIndex((d) => d.id === r.question_id);
+            const card = qi >= 0 ? deck[qi] : null;
             return (
               <div
-                key={r.question_index}
+                key={r.question_id}
                 className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm"
               >
                 {r.correct ? (
@@ -206,24 +230,20 @@ export default function QuizGame({
                 ) : (
                   <XCircle size={16} className="shrink-0 text-danger" />
                 )}
-                <span className="font-mono text-xs text-muted">
-                  Q{r.question_index + 1}
-                </span>
-                {r.selected >= 0 ? (
+                <span className="font-mono text-xs text-muted">Q{qi + 1}</span>
+                {r.selected >= 0 && card ? (
                   <span className="font-mono text-xs">
-                    your answer: <span className={r.correct ? "text-cyber" : "text-danger"}>{String.fromCharCode(65 + r.selected)}</span>
+                    your answer:{" "}
+                    <span className={r.correct ? "text-cyber" : "text-danger"}>
+                      {card.orig[r.selected]}
+                    </span>
                   </span>
                 ) : (
                   <span className="font-mono text-xs text-muted">unanswered</span>
                 )}
-                {!r.correct && (
+                {!r.correct && card && (
                   <span className="font-mono text-xs text-cyber">
-                    correct: {String.fromCharCode(65 + r.correct_index)}
-                  </span>
-                )}
-                {!r.correct && qs && (
-                  <span className="w-full text-[11px] text-muted">
-                    → {qs.options[r.correct_index]}
+                    correct: {card.orig[r.correct_index]}
                   </span>
                 )}
               </div>
@@ -241,7 +261,7 @@ export default function QuizGame({
     );
   }
 
-  const q = quiz.questions[index];
+  const q = deck[index];
 
   return (
     <div className="no-select relative mx-auto w-full max-w-2xl">
@@ -250,12 +270,12 @@ export default function QuizGame({
       {/* status bar */}
       <div className="panel mb-4 flex items-center justify-between gap-3 px-4 py-3">
         <span className="font-mono text-xs uppercase tracking-widest text-muted">
-          Q{index + 1}/{quiz.questions.length}
+          Q{index + 1}/{deck.length}
         </span>
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-panel-2">
           <div
             className="h-full bg-cyber transition-all"
-            style={{ width: `${((index + 1) / quiz.questions.length) * 100}%` }}
+            style={{ width: `${((index + 1) / deck.length) * 100}%` }}
           />
         </div>
         <span className={`flex items-center gap-1.5 font-mono text-sm font-bold tabular ${timeLeft <= 30 ? "text-danger" : "text-cyber"}`}>
@@ -272,7 +292,7 @@ export default function QuizGame({
             <p className="mt-2 text-sm text-muted">
               {violations >= 3
                 ? "Multiple cheating-protection events were detected. This attempt is being submitted now."
-                : "Copying, dev-tools and tab-switching are disabled during quizzes. Repeated violations auto-submit your attempt."}
+                : "Copying, screenshots, printing, dev-tools and tab-switching are disabled during quizzes. Repeated violations auto-submit your attempt."}
             </p>
             {violations >= 3 ? (
               <p className="mt-3 flex items-center justify-center gap-2 font-mono text-xs text-cyber">
@@ -294,20 +314,20 @@ export default function QuizGame({
         </p>
         <h2 className="text-lg font-semibold leading-relaxed">{q.question}</h2>
         <div className="mt-5 space-y-2.5">
-          {q.options.map((opt, i) => {
-            const sel = answers[index] === i;
+          {q.shuffled.map((opt) => {
+            const sel = answers[index] === opt.origIdx;
             return (
               <button
-                key={i}
-                onClick={() => choose(i)}
+                key={opt.origIdx}
+                onClick={() => choose(opt.origIdx)}
                 className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition ${
                   sel
                     ? "border-cyber bg-cyber/10 text-cyber"
                     : "border-line bg-panel-2 text-foreground/90 hover:border-cyber/40"
                 }`}
               >
-                <span className="font-mono text-xs text-muted">{String.fromCharCode(65 + i)}.</span>
-                <span>{opt}</span>
+                <span className="font-mono text-xs text-muted">{String.fromCharCode(65 + opt.origIdx)}.</span>
+                <span>{opt.text}</span>
               </button>
             );
           })}
@@ -324,14 +344,14 @@ export default function QuizGame({
           <ArrowLeft size={14} /> Prev
         </button>
         <span className="font-mono text-xs text-muted">
-          {answeredCount}/{quiz.questions.length} answered
+          {answeredCount}/{deck.length} answered
         </span>
-        {index === quiz.questions.length - 1 ? (
+        {index === deck.length - 1 ? (
           <button onClick={() => submit(answers)} className="btn-primary">
             Submit <Lock size={13} />
           </button>
         ) : (
-          <button onClick={() => setIndex((i) => Math.min(quiz.questions.length - 1, i + 1))} className="btn-primary">
+          <button onClick={() => setIndex((i) => Math.min(deck.length - 1, i + 1))} className="btn-primary">
             Next <ArrowRight size={14} />
           </button>
         )}
@@ -346,4 +366,13 @@ export default function QuizGame({
       )}
     </div>
   );
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }

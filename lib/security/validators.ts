@@ -92,8 +92,8 @@ export const quizSubmitSchema = z.object({
   quiz_id: z.string().uuid(),
   answers: z.array(
     z.object({
-      question_index: z.number().int().min(0),
-      selected: z.number().int().min(-1),
+      question_id: z.string().uuid(),
+      selected: z.number().int().min(-1).max(99),
     })
   ),
   started_at: z.string().datetime(),

@@ -6,9 +6,13 @@ import { useEffect, useRef } from "react";
  * Anti-copy / anti-cheat guard used ONLY around quiz content.
  *
  * - Blocks copy, cut, paste, drag, context menu and text selection.
- * - Blocks the most common dev-tools / view-source keyboard shortcuts.
+ * - Blocks the most common dev-tools / view-source keyboard shortcuts
+ *   (F12, Ctrl/CMD+Shift+I/J/C/K/P, Ctrl+U/S/P) and the PrintScreen key.
  * - Detects an open DevTools window via the window-size breakpoint.
- * - Detects tab switches / window blur and reports them as violations.
+ * - Detects tab switches / window blur and reports them as violations;
+ *   a long loss of focus (e.g. Alt+Tab to another app) bumps twice so it
+ *   reaches the auto-submit threshold faster.
+ * - Blocks the browser print / "save as PDF" path.
  *
  * This is a deterrence layer, not a hard security boundary: the real
  * protection is that correct answers never leave the server.
@@ -23,6 +27,7 @@ export default function AntiCopy({
   onConfirmedCheat?: () => void;
 }) {
   const violations = useRef(0);
+  const lastBlurAt = useRef(0);
 
   useEffect(() => {
     function bump() {
@@ -44,10 +49,18 @@ export default function AntiCopy({
 
     const blockKey = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-      // F12, Ctrl/Cmd+Shift+I/J/C, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+Shift+K
+      // PrintScreen
+      if (k === "printscreen" || e.keyCode === 44) {
+        e.preventDefault();
+        bump();
+        return;
+      }
+      // F12, Ctrl/Cmd+Shift+I/J/C/K/P, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+Shift+M
       if (
         k === "f12" ||
-        (e.ctrlKey && e.shiftKey && ["i", "j", "c", "k"].includes(k)) ||
+        (e.ctrlKey && e.shiftKey && ["i", "j", "c", "k", "p", "m"].includes(k)) ||
+        (e.metaKey && e.shiftKey && ["i", "j", "c", "k", "p"].includes(k)) ||
+        (e.metaKey && e.altKey && ["i", "j", "c"].includes(k)) ||
         (e.ctrlKey && !e.shiftKey && ["u", "s", "p"].includes(k))
       ) {
         e.preventDefault();
@@ -64,6 +77,17 @@ export default function AntiCopy({
       if (document.hidden) bump();
     }
     function onBlur() {
+      lastBlurAt.current = Date.now();
+      bump();
+    }
+    function onFocus() {
+      // Returning after a long absence (switched to another app) counts again.
+      if (lastBlurAt.current && Date.now() - lastBlurAt.current > 3000) {
+        bump();
+      }
+      lastBlurAt.current = 0;
+    }
+    function onPrint() {
       bump();
     }
 
@@ -80,6 +104,8 @@ export default function AntiCopy({
     document.addEventListener("keydown", blockKey);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("beforeprint", onPrint);
 
     // DevTools window-size breakpoint detection.
     const last = { width: window.outerWidth, height: window.outerHeight };
@@ -103,6 +129,8 @@ export default function AntiCopy({
       document.removeEventListener("keydown", blockKey);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("beforeprint", onPrint);
       window.clearInterval(probe);
     };
   }, [onViolation, onConfirmedCheat, minViolationsToBlow]);

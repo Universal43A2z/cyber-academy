@@ -23,7 +23,9 @@ export async function POST(req: Request) {
 
   // Answers are scored on the server against the stored correct answers.
   // The client never receives correct_index, so student-side snooping of the
-  // network / DOM cannot reveal the key.
+  // network / DOM cannot reveal the key. Questions and options are shuffled
+  // per-attempt on the client, so grading is done by question id (not by a
+  // fixed index that the client could reorder around).
   const { data: quiz } = await admin
     .from("quizzes")
     .select("id, title, week_no, time_limit_sec")
@@ -34,28 +36,36 @@ export async function POST(req: Request) {
 
   const { data: questions } = await admin
     .from("quiz_questions")
-    .select("id, correct_index, points")
+    .select("id, correct_index, points, position")
     .eq("quiz_id", quiz_id)
     .order("position");
 
+  const answerById = new Map(answers.map((a) => [a.question_id, a.selected]));
+  const qs = questions ?? [];
+  const ordered = [...qs].sort((a, b) => a.position - b.position);
+
   const marked: { question_index: number; selected: number; correct: boolean }[] = [];
-  const review: { question_index: number; selected: number; correct: boolean; correct_index: number }[] = [];
+  const review: { question_id: string; question_index: number; selected: number; correct: boolean; correct_index: number }[] = [];
   let score = 0;
   let total = 0;
-  const qs = questions ?? [];
 
-  for (const q of qs) {
+  ordered.forEach((q, qi) => {
     total += q.points;
-    const answer = answers.find((a) => a.question_index === qs.indexOf(q));
-    const selected = answer?.selected ?? -1;
+    const selected = answerById.get(q.id) ?? -1;
     const correct = q.correct_index === selected;
     if (correct) score += q.points;
     // Only the response receives the answer key (post submission, for the
     // review screen). The stored row keeps just the plain marks so the key
     // is never readable by mentees from their own attempt records.
-    marked.push({ question_index: qs.indexOf(q), selected, correct });
-    review.push({ question_index: qs.indexOf(q), selected, correct, correct_index: q.correct_index });
-  }
+    marked.push({ question_index: qi, selected, correct });
+    review.push({
+      question_id: q.id,
+      question_index: qi,
+      selected,
+      correct,
+      correct_index: q.correct_index,
+    });
+  });
 
   const { data: attempt, error } = await admin
     .from("quiz_attempts")
