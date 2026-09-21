@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { BookOpen, CheckCircle2, Circle, LockOpen } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, Lock, LockOpen, LockKeyhole } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { weekLabel } from "@/lib/utils";
+import { weekLabel, unlockedModuleIds } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,12 @@ export default async function ModulesPage() {
     .eq("user_id", uid);
 
   const done = new Set((progress ?? []).filter((p) => p.completed).map((p) => p.module_id));
+  const sorted = (modules ?? []).slice().sort((a, b) => a.week_no - b.week_no);
+  const unlocked = unlockedModuleIds(sorted, done);
+  const prevOf = new Map<string, string>();
+  sorted.forEach((m, i) => {
+    if (i > 0) prevOf.set(m.id, sorted[i - 1].title);
+  });
   const pct = modules?.length ? Math.round((done.size / modules.length) * 100) : 0;
 
   return (
@@ -32,7 +38,7 @@ export default async function ModulesPage() {
         <div>
           <h1 className="text-2xl font-bold">Weekly modules</h1>
           <p className="mt-1 text-sm text-muted">
-            Published by your mentors. Read each module, then mark it complete.
+            Published by your mentors. Read each module, then mark it complete to unlock the next one.
           </p>
         </div>
         <span className="chip">
@@ -53,7 +59,8 @@ export default async function ModulesPage() {
       <div className="space-y-3">
         {(modules ?? []).map((m) => {
           const isDone = done.has(m.id);
-          return (
+          const isUnlocked = unlocked.has(m.id);
+          return isUnlocked ? (
             <Link
               key={m.id}
               href={`/dashboard/modules/${m.id}`}
@@ -79,6 +86,22 @@ export default async function ModulesPage() {
                 <BookOpen size={16} className="shrink-0 text-muted" />
               </div>
             </Link>
+          ) : (
+            <div key={m.id} className="panel flex items-start justify-between gap-4 p-5 opacity-70">
+              <div className="flex items-start gap-3">
+                <LockKeyhole size={20} className="mt-0.5 shrink-0 text-muted/60" />
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
+                    {weekLabel(m.week_no)} module · locked
+                  </p>
+                  <h2 className="mt-1 font-semibold text-muted">{m.title}</h2>
+                  <p className="mt-1 text-sm text-muted">
+                    Complete <span className="text-cyber/80">{prevOf.get(m.id) ?? "the previous module"}</span> to unlock this lesson.
+                  </p>
+                </div>
+              </div>
+              <Lock size={16} className="shrink-0 text-muted/50" />
+            </div>
           );
         })}
         {!modules?.length ? (
