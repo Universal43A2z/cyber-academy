@@ -36,7 +36,7 @@ export async function proxy(request: NextRequest) {
 
   const hasSessionCookie = request.cookies
     .getAll()
-    .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+    .some((c) => /^sb-.*-auth-token(\.\d+)?$/.test(c.name));
 
   let user: import("@supabase/supabase-js").User | null = null;
   if (hasSessionCookie) {
