@@ -12,7 +12,11 @@ export async function requireMentor(): Promise<{ id: string; email: string } | n
   } = await server.auth.getUser();
   if (!user) return null;
 
-  const role = user.user_metadata?.role ?? (await profileRole(user.id));
+  // Authoritative role comes from the profiles table ONLY. Never trust
+  // user_metadata here — Supabase lets any authenticated user edit their own
+  // metadata (supabase.auth.updateUser({ data: { role: "mentor" } })), which
+  // would otherwise allow self-promotion into the mentor API surface.
+  const role = await profileRole(user.id);
   if (role !== "mentor") return null;
 
   return { id: user.id, email: user.email ?? "" };

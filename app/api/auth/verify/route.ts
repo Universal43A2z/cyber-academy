@@ -60,6 +60,27 @@ export async function POST(req: Request) {
         });
       }
     }
+    // Promote to mentor only if a server-side pending grant exists. The grant
+    // is written by the otp route solely after the mentor access code is
+    // validated, and the signup trigger always creates mentees — so this is
+    // the only path to the mentor role. Client-supplied metadata is ignored.
+    const { data: pending } = await admin
+      .from("pending_mentor_grants")
+      .select("email")
+      .eq("email", input.email)
+      .maybeSingle();
+
+    let role = "mentee";
+    if (pending) {
+      role = "mentor";
+      await admin.from("profiles").update({ role: "mentor" }).eq("id", data.user.id);
+      // Keep auth metadata in sync so display code / audit logs stay correct.
+      await admin.auth.admin.updateUserById(data.user.id, {
+        user_metadata: { ...(data.user.user_metadata ?? {}), role: "mentor" },
+      });
+      await admin.from("pending_mentor_grants").delete().eq("email", input.email);
+    }
+
     await auditLog({
       action: "signup.completed",
       userId: data.user.id,
@@ -67,7 +88,7 @@ export async function POST(req: Request) {
       ip,
       details: {
         full_name: data.user.user_metadata?.full_name ?? null,
-        role: data.user.user_metadata?.role ?? "mentee",
+        role,
       },
     });
   } else {

@@ -76,6 +76,17 @@ export async function POST(req: Request) {
     return json({ error: "Could not send the code. Please try again." }, 400);
   }
 
+  // 5. Mentor signup: the access code was validated above, so record a
+  //    server-side pending grant. The verify route consumes this to promote
+  //    the account to mentor. It lives in a table the client cannot reach,
+  //    so metadata spoofing / direct public signups cannot forge a mentor.
+  if (input.mode === "signup" && input.role === "mentor") {
+    await admin.from("pending_mentor_grants").upsert(
+      { email: input.email },
+      { onConflict: "email" }
+    );
+  }
+
   auditLog({
     action: input.mode === "signup" ? "otp.sent_signup" : "otp.sent_login",
     email: input.email,

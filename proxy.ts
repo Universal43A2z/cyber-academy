@@ -61,9 +61,16 @@ export async function proxy(request: NextRequest) {
   }
 
   // 3. Mentor-only areas -> mentees get bounced to their dashboard.
+  //    Read the role from profiles (RLS lets a user read their own row).
+  //    Never trust user_metadata here: users can edit their own metadata.
   const isMentorArea = pathname.startsWith("/mentor");
   if (isMentorArea && user) {
-    const role = user.user_metadata?.role ?? "mentee";
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    const role = profile?.role ?? "mentee";
     if (role !== "mentor") {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";

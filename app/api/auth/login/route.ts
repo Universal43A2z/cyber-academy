@@ -49,5 +49,13 @@ export async function POST(req: Request) {
     ip,
   });
 
-  return json({ ok: true, role: data.user.user_metadata?.role ?? "mentee" });
+  // Return the authoritative role from profiles (used only for the post-login
+  // redirect). Never echo user_metadata — users can edit their own metadata.
+  const { data: profile } = await server
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  return json({ ok: true, role: profile?.role ?? "mentee" });
 }

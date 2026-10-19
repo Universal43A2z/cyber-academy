@@ -48,7 +48,11 @@ begin
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    coalesce(new.raw_user_meta_data ->> 'role', 'mentee'),
+    -- SECURITY: never trust client-supplied metadata for `role`. Anyone could
+    -- otherwise sign up directly via the public endpoint with role:"mentor" and
+    -- bypass the mentor access code. Mentors are promoted only by the server
+    -- (service role) after the access code is validated — see pending_mentor_grants.
+    'mentee',
     nullif(new.raw_user_meta_data ->> 'year_level', '')
   )
   on conflict (id) do nothing;
@@ -243,6 +247,8 @@ create table if not exists public.feedback_reports (
 create index if not exists feedback_reports_user_id_idx on public.feedback_reports (user_id);
 create index if not exists feedback_reports_status_idx  on public.feedback_reports (status);
 
+alter table public.feedback_reports enable row level security;
+
 create policy "feedback_select_own_or_mentor" on public.feedback_reports
   for select using (user_id = auth.uid() or public.is_mentor());
 
@@ -274,11 +280,28 @@ create policy "announcements_select_auth" on public.announcements
 create policy "announcements_write_mentor" on public.announcements
   for all using (public.is_mentor()) with check (public.is_mentor());
 
+-- ---------------------------------------------------------------------
+-- Pending mentor grants — server-only. A row is written by a server route
+-- ONLY after the mentor access code is validated, and is consumed (deleted)
+-- when that account's OTP is verified. Because it is never reachable through
+-- PostgREST, a client cannot forge a mentor promotion.
+-- ---------------------------------------------------------------------
+create table if not exists public.pending_mentor_grants (
+  email      text primary key,
+  created_at timestamptz not null default now()
+);
+
+alter table public.pending_mentor_grants enable row level security;
+
 -- =====================================================================
 -- GRANTS
 -- =====================================================================
 grant usage on schema public to anon, authenticated;
-grant select, insert, update, delete on public.profiles        to authenticated;
+grant select, insert, delete on public.profiles              to authenticated;
+-- SECURITY: users may only update their own safe columns. `role` and `email`
+-- are immutable to clients, which prevents self-promotion via a direct
+-- PostgREST PATCH of the caller's own profile row.
+grant update (full_name, year_level, avatar_url) on public.profiles to authenticated;
 grant select                    on public.modules               to authenticated;
 grant select, insert, update, delete on public.module_progress to authenticated;
 grant select, insert, update    on public.attendances           to authenticated;
@@ -290,3 +313,6 @@ grant select, insert, update    on public.feedback_reports     to authenticated;
 grant select                    on public.announcements        to authenticated;
 grant insert, update, delete    on public.announcements        to authenticated;
 grant execute on function public.is_mentor() to authenticated;
+
+-- pending_mentor_grants is server-only — never granted to anon/authenticated.
+revoke all on public.pending_mentor_grants from anon, authenticated;

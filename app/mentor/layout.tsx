@@ -20,7 +20,9 @@ export default async function MentorLayout({
     .eq("id", user.id)
     .maybeSingle();
 
-  const role = profile?.role ?? user.user_metadata?.role ?? "mentee";
+  // Authoritative role from the DB only. Never fall back to user_metadata —
+  // users can edit their own metadata, so it is not a trust source.
+  const role = profile?.role ?? "mentee";
   if (role !== "mentor") redirect("/dashboard");
 
   return (
