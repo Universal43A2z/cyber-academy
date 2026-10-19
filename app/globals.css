@@ -154,6 +154,22 @@ body {
   80% { opacity: 1; }
 }
 
+.toast-in {
+  animation: toastIn 0.24s cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-0.85rem) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast-bar {
+  transform-origin: left;
+  animation: toastBar 5s linear both;
+}
+@keyframes toastBar {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
 .no-select {
   user-select: none;
   -webkit-user-select: none;

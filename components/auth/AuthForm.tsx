@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Mail,
@@ -13,6 +13,7 @@ import {
   KeyRound,
   GraduationCap,
 } from "lucide-react";
+import Toast from "@/components/Toast";
 
 type Mode = "login" | "otp" | "signup";
 type Stage = "form" | "otp";
@@ -36,8 +37,20 @@ export default function AuthForm() {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [stage, setStage] = useState<Stage>("form");
   const [resetStage, setResetStage] = useState<"email" | "code" | null>(null);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsgState] = useState<{ ok: boolean; text: string } | null>(null);
+  const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const setMsg = useCallback((next: { ok: boolean; text: string } | null) => {
+    setMsgState(next);
+    setToast(next);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   // fields
   const [email, setEmail] = useState("");
@@ -180,6 +193,7 @@ export default function AuthForm() {
 
   return (
     <div className="panel w-full max-w-md p-6 sm:p-8">
+      <Toast msg={toast} onDismiss={() => setToast(null)} />
       <div className="mb-6">
         <h1 className="font-mono text-lg font-bold uppercase tracking-widest">
           {resetStage
